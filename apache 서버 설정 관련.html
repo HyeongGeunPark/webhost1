@@ -1,0 +1,61 @@
+<head>
+    <title>apache 서버 설정 관련</title>
+    <meta charset="utf-8">
+</head>
+
+
+<body>
+    <h2>포트를 바꾸려면</h2>
+    <ol>
+        <li>/etc/apache2/sites-available/000-default.conf에서 virtualhost를 원하는 포트로 변경하기</li>
+        <li>/etc/apache2/ports.conf에서 Listen 포트에 원하는 포트 추가하기</li>
+        <li>apache2 재기동 후 sudo netstat -tnlp로 원하는 포트가 열렸는지 확인해볼 수 있다.</li>
+    </ol>
+
+    <h2>루트 디렉터리 변경하려면</h2>
+    <ol>
+        <li>/etc/apache2/sites-available/000-default.conf에서 DocumentRoot를 원하는 디렉터리로 변경</li>
+        <li>
+            <p>
+                /etc/apache2/apache2.conf에서 Directory 검색 후, 원하는 디렉터리를 다음과 같이 추가한다. (디렉터리 권한 설정)
+            </p>
+            <p>
+                예시 디렉터리: /home/hgp51682/workspace/html_practice
+            </p>
+
+            <xmp>
+    <Directory /home/hgp51682/workspace/html_practice>
+        Options -Indexes -FollowSymLinks
+        AllowOverride None
+        Require all granted
+    </Directory>
+            </xmp>
+
+
+            <ul>
+                <li>
+                    * 옵션에는 Indexes, FollowSymLinks 등 설정 가능한데, 안하는 편이 보안상 좋다.
+                </li>
+                <li>
+                    +Indexes -> 접근한 디렉터리에 DirectoryIndex로 설정된 파일이 없는 경우 디렉터리를 노출시킨다.
+                </li>
+                <li>+FollowSymLinks -> 심볼릭 링크로 설정한 디렉터리도 노출시킴
+                </li>
+                <li>DirectoryIndex는 /etc/apache2/mods-enabled/dir.conf에서 설정할 수 있다.</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h2>wsl과 호스트 windows의 portproxy 연결</h2>
+    <ol>
+        <li>sudo ufw status로 우분투 방화벽의 상태를 확인한다.</li>
+        <li>켜져 있다면 sudo ufw allow [포트번호]로 사용하고자 하는 포트를 개방한다.</li>
+        <li>호스트 windows에서 powershell을 이용, portproxy 설정을 한다.
+            <xmp>
+netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=[외부로 노출되는 포트] connectaddress=[wsl 주소] connectport=[사용할 wsl포트]
+            </xmp>
+        </li>
+        <li>windows 방화벽에서 외부로 노출되는 포트를 인바운드 규칙에 허용한다.</li>
+        <li>이후 windows의 공인 ip와 설정한 외부 포트를 통해 wsl의 포트로 접속할 수 있다.</li>
+    </ol>
+</body>
